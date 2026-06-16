@@ -230,3 +230,7 @@ results/*.json
 
 # Paper PDFs (track summaries only, not binaries)
 papers/originals/*.pdf
+
+# Dataset files - never commit raw data
+dataset/LETOR4.0/MQ2007/
+dataset/**/*.txt
