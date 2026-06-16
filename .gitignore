@@ -216,3 +216,17 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Dataset files (too large for GitHub)
+datasets/LETOR4.0/*.txt
+datasets/LETOR4.0/MQ2007/
+datasets/LETOR4.0/MQ2008/
+
+# Experiment outputs (tracked selectively)
+results/*.json
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
+
+# Paper PDFs (track summaries only, not binaries)
+papers/originals/*.pdf
