@@ -1,8 +1,8 @@
 # MTech Research Project — Learning to Rank
 
 **Student:** Ajaz Hussain (DA25M006)
-**Institution:** [Your Institution]
-**Supervisor:** [Professor Name]
+**Institution:** [IIT Madras]
+**Supervisor:** [Professor Suryanarayna Sankagiri]
 
 ---
 
