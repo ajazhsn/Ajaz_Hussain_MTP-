@@ -2,7 +2,7 @@
 
 **Student:** Ajaz Hussain (DA25M006)
 **Institution:** IIT Madras
-**Supervisor:** Prof. Suryanarayana Sankagiri
+**Supervisor:** Prof. Suryanarayna Sankagiri
 
 ---
 
@@ -28,6 +28,26 @@ Design and implementation of **PASAR (Position-Aware Self-Attention Reranker)** 
 - LambdaMART (Burges, MSR 2010)
 
 **Dataset:** LETOR 4.0 (MQ2007) — 1,692 queries, ~69,000 query-document pairs, 46 features
+
+**Evaluation:** 5-fold cross-validation, NDCG@1/3/5/10 on Fold 1 validation set
+
+---
+
+## Phase 1 Results (MQ2007 — Fold 1 Validation)
+
+| Model | NDCG@1 | NDCG@3 | NDCG@5 | NDCG@10 |
+|-------|--------|--------|--------|---------|
+| Random Baseline | 0.3186 | 0.3393 | 0.3517 | 0.3884 |
+| RankNet | 0.5949 | 0.5693 | 0.5749 | 0.6010 |
+| LambdaRank | 0.5801 | 0.5712 | 0.5690 | 0.5958 |
+| LambdaMART | 0.5782 | 0.5705 | 0.5675 | 0.5939 |
+
+**Key findings:**
+- All three models improve NDCG@10 by ~55% over the random baseline
+- The gap between models is small (~1-2%), consistent with prior work on LETOR 4.0
+- Small differences reflect dataset-level limitations: sparse labels (3 levels), pre-extracted features, and absence of clickthrough-style implicit feedback
+- LambdaMART converges most stably (133 trees, no oscillation) vs neural models (30 epochs, oscillation after epoch 10)
+- The theoretical story — RankNet plateau motivating LambdaRank, LambdaRank gradients motivating LambdaMART — is clearly visible in training dynamics even when final numbers are similar
 
 ---
 
@@ -56,7 +76,6 @@ This hypothesis is motivated by the observation that classical LTR models like L
 **Key preprocessing decision:** Only `random_bool=1` sessions used for training to avoid confounding display position with hotel quality — ensuring position bias is learnable from genuine random exposure.
 
 ### Model Architecture
-
 ```
 Input: [batch, slate_size, 23 features]
          │
@@ -135,19 +154,9 @@ cd Ajaz_Hussain_MTP-
 pip install -r requirements.txt
 ```
 
-**LETOR 4.0:** Download MQ2007 from the official source and place in `datasets/LETOR4.0/`.
+**LETOR 4.0:** Download MQ2007 from the official source and place in `dataset/LETOR4.0/`.
 
-**Expedia:** Download from [Kaggle](https://www.kaggle.com/c/expedia-personalized-sort/data) and place in `datasets/Expedia/`.
-
----
-
-## Phase 1 Results
-
-| Model | NDCG@1 | NDCG@3 | NDCG@5 | NDCG@10 |
-|-------|--------|--------|--------|---------|
-| RankNet | — | — | — | — |
-| LambdaRank | — | — | — | — |
-| LambdaMART | — | — | — | — |
+**Expedia:** Download from [Kaggle](https://www.kaggle.com/c/expedia-personalized-sort/data) and place in `dataset/Expedia/`.
 
 ---
 
@@ -170,15 +179,15 @@ pip install -r requirements.txt
 |------|-----------|
 | 2025-06 | Repository setup, folder structure created |
 | 2025-06 | LETOR 4.0 data loader implementation |
-| 2025-06 | RankNet implementation and training |
-| 2025-06 | LambdaRank implementation and training |
-| 2025-06 | LambdaMART implementation and training |
+| 2025-06 | RankNet — implementation, training, analysis |
+| 2025-06 | LambdaRank — implementation, training, analysis |
+| 2025-06 | LambdaMART — implementation, training, analysis |
+| 2025-06 | Phase 1 comparative analysis and plots |
 | 2025-07 | Expedia dataset preprocessing and EDA |
 | 2025-07 | PASAR architecture design and implementation |
 | 2025-07 | PASAR training with weighted slate sampling |
 | 2025-07 | Ablation study: SelfAttentionOnly vs PASAR vs PositionBiasOnly |
-| | Comparative analysis and plots |
-| | Report writing |
+| | Report writing — Overleaf |
 
 ---
 
