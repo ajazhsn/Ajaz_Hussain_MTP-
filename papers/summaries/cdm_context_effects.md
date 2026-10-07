@@ -17,3 +17,4 @@ as a choice target and as a context item that influences other items' utilities.
 ## Open Questions
 - How does CDM performance degrade when choice set size distribution is skewed?
 - Can CDM context effects be incorporated into LTR frameworks like LambdaRank?
+
