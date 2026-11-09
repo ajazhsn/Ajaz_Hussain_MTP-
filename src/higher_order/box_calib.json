@@ -1,0 +1,8 @@
+{
+ "radius": 0.25,
+ "lambda": {
+  "D1b_sim": 1.0036,
+  "D2b_comp": 0.2965,
+  "D3b_centre": 0.1491
+ }
+}

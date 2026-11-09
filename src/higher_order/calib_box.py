@@ -1,37 +1,53 @@
 """
-calib_order.py - calibration of the order-4 and order-5 datasets (no training, CPU only).
+calib_box.py - calibration for the box-kernel robustness datasets (no training).
 
-Same rule as every other higher-order dataset: choose lambda so that the part of the effect
-NOT explained by own features + others' mean & sd ("hard part") is 0.03 nats.
-Writes order_calib.json; synth.py reads it automatically.
-
-Usage:  python calib_order.py
+Step A (sweep):   python calib_box.py
+   For each radius r and each of D1b/D2b/D3b: find lambda so that the part NOT explained
+   by own + others' mean & sd is 0.03 nats (same rule as the Gaussian datasets), and report
+   the low-order share and how often the effect is non-zero. Writes calib_box_table.csv.
+Step B (pick):    python calib_box.py --pick 0.3
+   Writes box_calib.json for the chosen radius; synth.py reads it automatically.
 """
-import json
+import argparse, json, os
 import numpy as np, pandas as pd
 import synth
 
-DS = ["D4_quad", "D5_quint"]
+DS = ["D1b_sim", "D2b_comp", "D3b_centre"]
 TARGET_HARD = 0.03
-lams = list(np.geomspace(0.005, 2.0, 14))
 
-rows, out = [], {}
-for ds in DS:
-    print("calibrating", ds, flush=True)
-    g = pd.DataFrame(synth.calibrate(ds, lams)).groupby("lam").mean(numeric_only=True).reset_index()
-    print(g[["lam", "gap_twin", "gap_low", "r2_own", "r2_low"]].round(4).to_string(index=False), flush=True)
-    g = g[g.gap_low > 0]
-    lg = np.log(g.gap_low.values)
-    lam = float(np.exp(np.interp(np.log(TARGET_HARD), lg, np.log(g.lam.values))))
-    twin = float(np.exp(np.interp(np.log(TARGET_HARD), lg, np.log(g.gap_twin.values))))
-    edge = lam <= g.lam.min() * 1.01 or lam >= g.lam.max() * 0.99
-    rows.append(dict(dataset=ds, lam=round(lam, 4), twin_gap=round(twin, 4),
-                     low_share_pct=round(100 * (1 - TARGET_HARD / twin), 1), at_grid_edge=edge))
-    out[ds] = round(lam, 4)
-    print("  ->", rows[-1], flush=True)
+ap = argparse.ArgumentParser()
+ap.add_argument("--radii", default="0.2,0.25,0.3,0.4")
+ap.add_argument("--pick", type=float, default=None)
+a = ap.parse_args()
 
-json.dump({"lambda": out, "target_hard": TARGET_HARD}, open("order_calib.json", "w"), indent=1)
-print("\n", pd.DataFrame(rows).to_string(index=False))
-print("\nwrote order_calib.json:", out)
-print("for comparison (Gaussian, sigma 0.2): low-order share D2 ~30%, D3 ~61%")
-print("if at_grid_edge is True, widen the lambda grid and rerun")
+if a.pick is not None:
+    t = pd.read_csv("calib_box_table.csv")
+    t = t[np.isclose(t.radius, a.pick)]
+    assert len(t) == 3, f"radius {a.pick} not in calib_box_table.csv"
+    out = {"radius": a.pick, "lambda": {r.dataset: round(float(r.lam), 4) for r in t.itertuples()}}
+    json.dump(out, open("box_calib.json", "w"), indent=1)
+    print("wrote box_calib.json:", out)
+    raise SystemExit
+
+lams = list(np.geomspace(0.01, 20, 16))
+rows = []
+for r in map(float, a.radii.split(",")):
+    for ds in DS:
+        synth.DATASETS[ds]["sigma"] = r
+        X = np.random.default_rng(7).normal(size=(5000, synth.N_ITEMS, synth.D))
+        c = synth.context_raw(X, ds, None)
+        nonzero = float((c > 0).mean())
+        g = pd.DataFrame(synth.calibrate(ds, lams)).groupby("lam").mean(numeric_only=True).reset_index()
+        g = g[g.gap_low > 0]
+        lg = np.log(g.gap_low.values)
+        lam = float(np.interp(np.log(TARGET_HARD), lg, g.lam))
+        twin = float(np.interp(np.log(TARGET_HARD), lg, g.gap_twin))
+        edge = lam <= g.lam.min() * 1.01 or lam >= g.lam.max() * 0.99
+        rows.append(dict(dataset=ds, radius=r, lam=lam, twin_gap=twin,
+                         low_share=100 * (1 - TARGET_HARD / twin), frac_items_affected=nonzero,
+                         r2_low=float(g.r2_low.iloc[0]), at_grid_edge=edge))
+        print({k: (round(v, 4) if isinstance(v, float) else v) for k, v in rows[-1].items()}, flush=True)
+
+t = pd.DataFrame(rows); t.to_csv("calib_box_table.csv", index=False)
+print("\n", t.round(4).to_string(index=False))
+print("\nGaussian datasets for comparison (sigma 0.2): low_share D1 ~3%, D2 ~30%, D3 ~61%")

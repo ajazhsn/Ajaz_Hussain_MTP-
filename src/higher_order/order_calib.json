@@ -1,0 +1,7 @@
+{
+ "lambda": {
+  "D4_quad": 0.144,
+  "D5_quint": 0.1098
+ },
+ "target_hard": 0.03
+}

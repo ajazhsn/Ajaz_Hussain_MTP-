@@ -1,0 +1,115 @@
+da25m006@WSAI-CLUSTER:~$ squeue -u da25m006
+             JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)
+            6859_3    public synthfin da25m006  R    2:51:47      1 WSAI-04
+da25m006@WSAI-CLUSTER:~$ squeue -u da25m006
+             JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)
+            6859_3    public synthfin da25m006  R    2:51:56      1 WSAI-04
+da25m006@WSAI-CLUSTER:~$ squeue -u da25m006
+             JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)
+da25m006@WSAI-CLUSTER:~$ cd /storage_server/da25m006/synth
+source /storage/opt/miniforge3/etc/profile.d/conda.sh && conda activate pytorch-env
+squeue -u da25m006                     # should be empty
+ls synth_final/results | wc -l         # target: 840 runs + 210 oracle = 1050
+python paired.py synth_final
+python summarize.py synth_final
+             JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)
+1050
+
+=== D0_lcl
+comparison                                        A            B   n   mean diff A-B     s.e.       t   A wins
+TUNED attention vs mean+sd               sa_L3_w32_h2  pool_meansd  30         0.00011  0.00006     1.8   12/30
+TUNED DeepHalo-Q vs mean+sd              dhq_L4_e16_H8  pool_meansd  30         0.00001  0.00005     0.2   13/30
+TUNED attention vs TUNED DeepHalo-Q      sa_L3_w32_h2 dhq_L4_e16_H8  30         0.00010  0.00007     1.5   14/30
+TUNED attention vs blindfolded twin      sa_L3_w32_h2     sa1_self  30        -0.05258  0.00060   -87.9   30/30
+
+=== D1_sim
+comparison                                        A            B   n   mean diff A-B     s.e.       t   A wins
+TUNED attention vs mean+sd               sa_L3_w32_h2  pool_meansd  30        -0.01090  0.00115    -9.4   30/30
+TUNED DeepHalo-Q vs mean+sd              dhq_L4_e16_H8  pool_meansd  30        -0.00113  0.00028    -4.0   20/30
+TUNED attention vs TUNED DeepHalo-Q      sa_L3_w32_h2 dhq_L4_e16_H8  30        -0.00977  0.00116    -8.4   29/30
+TUNED attention vs blindfolded twin      sa_L3_w32_h2     sa1_self  30        -0.01106  0.00117    -9.5   30/30
+
+=== D2_comp
+comparison                                        A            B   n   mean diff A-B     s.e.       t   A wins
+TUNED attention vs mean+sd               sa_L3_w32_h2  pool_meansd  30        -0.00642  0.00021   -30.5   30/30
+TUNED DeepHalo-Q vs mean+sd              dhq_L4_e16_H8  pool_meansd  30        -0.00291  0.00012   -24.7   30/30
+TUNED attention vs TUNED DeepHalo-Q      sa_L3_w32_h2 dhq_L4_e16_H8  30        -0.00351  0.00019   -18.2   30/30
+TUNED attention vs blindfolded twin      sa_L3_w32_h2     sa1_self  30        -0.02000  0.00019  -107.7   30/30
+
+=== D3_centre
+comparison                                        A            B   n   mean diff A-B     s.e.       t   A wins
+TUNED attention vs mean+sd               sa_L3_w32_h2  pool_meansd  30        -0.00746  0.00016   -47.5   30/30
+TUNED DeepHalo-Q vs mean+sd              dhq_L4_e16_H8  pool_meansd  30        -0.00170  0.00017   -10.1   29/30
+TUNED attention vs TUNED DeepHalo-Q      sa_L3_w32_h2 dhq_L4_e16_H8  30        -0.00576  0.00017   -34.6   30/30
+TUNED attention vs blindfolded twin      sa_L3_w32_h2     sa1_self  30        -0.06112  0.00014  -424.9   30/30
+
+=== D1b_sim
+comparison                                        A            B   n   mean diff A-B     s.e.       t   A wins
+TUNED attention vs mean+sd               sa_L3_w32_h2  pool_meansd  30        -0.00029  0.00017    -1.7   23/30
+TUNED DeepHalo-Q vs mean+sd              dhq_L4_e16_H8  pool_meansd  30         0.00024  0.00004     5.7    5/30
+TUNED attention vs TUNED DeepHalo-Q      sa_L3_w32_h2 dhq_L4_e16_H8  30        -0.00054  0.00018    -3.0   28/30
+TUNED attention vs blindfolded twin      sa_L3_w32_h2     sa1_self  30        -0.00030  0.00017    -1.8   25/30
+
+=== D2b_comp
+comparison                                        A            B   n   mean diff A-B     s.e.       t   A wins
+TUNED attention vs mean+sd               sa_L3_w32_h2  pool_meansd  30        -0.00529  0.00017   -30.2   30/30
+TUNED DeepHalo-Q vs mean+sd              dhq_L4_e16_H8  pool_meansd  30        -0.00253  0.00011   -23.9   30/30
+TUNED attention vs TUNED DeepHalo-Q      sa_L3_w32_h2 dhq_L4_e16_H8  30        -0.00276  0.00014   -20.1   30/30
+TUNED attention vs blindfolded twin      sa_L3_w32_h2     sa1_self  30        -0.01683  0.00015  -108.8   30/30
+
+=== D3b_centre
+comparison                                        A            B   n   mean diff A-B     s.e.       t   A wins
+TUNED attention vs mean+sd               sa_L3_w32_h2  pool_meansd  30        -0.00659  0.00014   -47.1   30/30
+TUNED DeepHalo-Q vs mean+sd              dhq_L4_e16_H8  pool_meansd  30        -0.00144  0.00015    -9.5   29/30
+TUNED attention vs TUNED DeepHalo-Q      sa_L3_w32_h2 dhq_L4_e16_H8  30        -0.00515  0.00014   -36.7   30/30
+TUNED attention vs blindfolded twin      sa_L3_w32_h2     sa1_self  30        -0.05514  0.00014  -407.6   30/30
+
+=== D0_lcl   seeds with oracle: 30   oracle CE 1.8797   theta-only CE 1.9424
+model          n  params          excess (nats)     gap to twin closed %         beyond mean+sd %
+sa1_self      30    8865      0.0544 +-  0.0006         0.000 +-   0.000                n/a (lcl)
+pool_meansd   30    5441      0.0017 +-  0.0000        96.830 +-   0.066              (reference)
+dhq_L4_e16_H8  30   11713      0.0017 +-  0.0000        96.799 +-   0.095                n/a (lcl)
+sa_L3_w32_h2  30   25953      0.0018 +-  0.0001        96.617 +-   0.103                n/a (lcl)
+
+=== D1_sim   seeds with oracle: 30   oracle CE 1.8863   theta-only CE 1.9187
+model          n  params          excess (nats)     gap to twin closed %         beyond mean+sd %
+sa1_self      30    8865      0.0310 +-  0.0002         0.000 +-   0.000        -0.526 +-   0.168
+pool_meansd   30    5441      0.0309 +-  0.0002         0.515 +-   0.168              (reference)
+dhq_L4_e16_H8  30   11713      0.0297 +-  0.0004         4.190 +-   0.929         3.695 +-   0.918
+sa_L3_w32_h2  30   25953      0.0200 +-  0.0012        35.786 +-   3.826        35.503 +-   3.820
+
+=== D2_comp   seeds with oracle: 30   oracle CE 1.9015   theta-only CE 1.9652
+model          n  params          excess (nats)     gap to twin closed %         beyond mean+sd %
+sa1_self      30    8865      0.0433 +-  0.0001         0.000 +-   0.000       -45.748 +-   0.358
+pool_meansd   30    5441      0.0297 +-  0.0001        31.376 +-   0.168              (reference)
+dhq_L4_e16_H8  30   11713      0.0268 +-  0.0001        38.089 +-   0.189         9.763 +-   0.379
+sa_L3_w32_h2  30   25953      0.0233 +-  0.0002        46.197 +-   0.442        21.578 +-   0.691
+
+=== D3_centre   seeds with oracle: 30   oracle CE 1.8643   theta-only CE 2.0013
+model          n  params          excess (nats)     gap to twin closed %         beyond mean+sd %
+sa1_self      30    8865      0.0767 +-  0.0001         0.000 +-   0.000      -232.797 +-   1.605
+pool_meansd   30    5441      0.0231 +-  0.0001        69.931 +-   0.146              (reference)
+dhq_L4_e16_H8  30   11713      0.0214 +-  0.0001        72.145 +-   0.151         7.294 +-   0.704
+sa_L3_w32_h2  30   25953      0.0156 +-  0.0001        79.656 +-   0.137        32.295 +-   0.563
+
+=== D1b_sim   seeds with oracle: 30   oracle CE 1.8890   theta-only CE 1.9220
+model          n  params          excess (nats)     gap to twin closed %         beyond mean+sd %
+sa1_self      30    8865      0.0320 +-  0.0002         0.000 +-   0.000        -0.029 +-   0.092
+pool_meansd   30    5441      0.0320 +-  0.0002         0.027 +-   0.092              (reference)
+dhq_L4_e16_H8  30   11713      0.0323 +-  0.0002        -0.729 +-   0.113        -0.758 +-   0.133
+sa_L3_w32_h2  30   25953      0.0317 +-  0.0003         0.959 +-   0.556         0.932 +-   0.551
+
+=== D2b_comp   seeds with oracle: 30   oracle CE 1.8998   theta-only CE 1.9600
+model          n  params          excess (nats)     gap to twin closed %         beyond mean+sd %
+sa1_self      30    8865      0.0429 +-  0.0001         0.000 +-   0.000       -36.850 +-   0.431
+pool_meansd   30    5441      0.0314 +-  0.0001        26.906 +-   0.233              (reference)
+dhq_L4_e16_H8  30   11713      0.0288 +-  0.0001        32.810 +-   0.171         8.057 +-   0.313
+sa_L3_w32_h2  30   25953      0.0261 +-  0.0001        39.229 +-   0.338        16.837 +-   0.518
+
+=== D3b_centre   seeds with oracle: 30   oracle CE 1.8642   theta-only CE 1.9909
+model          n  params          excess (nats)     gap to twin closed %         beyond mean+sd %
+sa1_self      30    8865      0.0735 +-  0.0001         0.000 +-   0.000      -194.647 +-   1.267
+pool_meansd   30    5441      0.0250 +-  0.0001        66.043 +-   0.148              (reference)
+dhq_L4_e16_H8  30   11713      0.0235 +-  0.0001        67.998 +-   0.164         5.717 +-   0.585
+sa_L3_w32_h2  30   25953      0.0184 +-  0.0001        75.001 +-   0.152        26.355 +-   0.484
+(pytorch-env) da25m006@WSAI-CLUSTER:/storage_server/da25m006/synth$
