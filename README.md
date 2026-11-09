@@ -1,147 +1,59 @@
-# MTech Research Project — Learning to Rank with Context Effects
+# Can Self-Attention Models Capture Context Effects?
 
-**Student:** Ajaz Hussain (DA25M006)
-**Institution:** IIT Madras
-**Supervisor:** Prof. Suryanarayna Sankagiri
+M.Tech Project, Data Science and AI, IIT Madras
+**Ajaz Hussain (DA25M006)**, guided by **Prof. Suryanarayana Sankagiri**
 
----
+When people choose, they rarely look at one option alone. Whether a hotel or a phone looks good depends on what else is shown next to it. This is called a **context effect**, and it breaks the IIA assumption on which the multinomial logit and most ranking models are built. Models like CDM and LCL capture only the first-order part of context, where each other item (or the slate average) pushes an item's utility up or down.
 
-## Overview
+In this project we check whether a **self-attention (Transformer) choice model** actually *learns* context effects of a known order from choice data, and whether it does this better than **DeepHalo** (Zhang et al., NeurIPS 2025), a recent model designed to control the order of interactions.
 
-This repository contains the complete research work for my MTech project on **Learning to Rank (LTR) with Context Effects**.
-
-The project is structured in two phases:
-
-**Phase 1 — Classical LTR Foundations**
-Implementation and analysis of three foundational LTR algorithms on the LETOR 4.0 benchmark dataset, with a focus on understanding *why* each algorithm improves on the previous one.
-
-**Phase 2 — Context-Aware Reranking (PASAR)**
-Design and implementation of **PASAR (Position-Aware Self-Attention Reranker)** — a novel reranker that merges Pobrotyn et al.'s self-attention reranker with RewardRank-style learned position bias embeddings on the Expedia Hotel Search dataset.
+**Full report:** [`report/Ajaz_Hussain_MTP_report.pdf`](report/Ajaz_Hussain_MTP_report.pdf)
 
 ---
 
-## Phase 1 — Classical LTR
+## Main results in short
 
-**Algorithms implemented:**
-- RankNet (Burges et al., ICML 2005)
-- LambdaRank (Burges et al., NeurIPS 2006)
-- LambdaMART (Burges, MSR 2010)
-
-**Dataset:** LETOR 4.0 (MQ2007) — 1,692 queries, ~69,000 query-document pairs, 46 features
-
-**Evaluation:** 5-fold cross-validation, NDCG@1/3/5/10 on Fold 1 validation set
-
----
-
-## Phase 1 Results (MQ2007 — Fold 1 Validation)
-
-| Model | NDCG@1 | NDCG@3 | NDCG@5 | NDCG@10 |
-|-------|--------|--------|--------|---------|
-| Random Baseline | 0.3186 | 0.3393 | 0.3517 | 0.3884 |
-| RankNet | 0.5949 | 0.5693 | 0.5749 | 0.6010 |
-| LambdaRank | 0.5801 | 0.5712 | 0.5690 | 0.5958 |
-| LambdaMART | 0.5782 | 0.5705 | 0.5675 | 0.5939 |
-
-**Key findings:**
-- All three models improve NDCG@10 by ~55% over the random baseline
-- The gap between models is small (~1-2%), consistent with prior work on LETOR 4.0
-- Small differences reflect dataset-level limitations: sparse labels (3 levels), pre-extracted features, and absence of clickthrough-style implicit feedback
-- LambdaMART converges most stably (133 trees, no oscillation) vs neural models (30 epochs, oscillation after epoch 10)
-- The theoretical story — RankNet plateau motivating LambdaRank, LambdaRank gradients motivating LambdaMART — is clearly visible in training dynamics even when final numbers are similar
+| Question | Answer |
+|---|---|
+| First-order (LCL) context | Both models capture about 97% of it, and the true A can be read back from every trained model (correlation 0.999). |
+| Second- and third-order context (30 seeds) | Self-attention has a lower test loss than DeepHalo on **every seed**. It captures 16.8–32.3% of the part that slate mean and sd cannot explain, against 5.7–9.8% for DeepHalo. |
+| Why not more? | Mainly data. With 1,000,000 slates, self-attention reaches 38.2–53.1% (DeepHalo 15.8–21.8%); below about 100,000 slates neither model beats the simple mean+sd summary. |
+| Depth | Two self-attention layers are enough for effects of order 2 to 5. Attention without its feed-forward network learns very little context. |
+| Real data | No usable context in LPMC (London travel mode). A small but reliable gain on Expedia, most of it explained by comparing each hotel with the others' standardised features. |
 
 ---
 
-## Phase 2 — PASAR: Position-Aware Self-Attention Reranker
-
-### Research Hypothesis
-
-> A reranking model that jointly captures **inter-item context effects** (via self-attention over the candidate slate) and **display position bias** (via learned rank-slot embeddings) will outperform models that capture only one of these two effects in isolation.
-
-This hypothesis is motivated by the observation that classical LTR models like LambdaMART score each document independently — making them structurally blind to two types of IIA violations present in real e-commerce data:
-1. **Inter-item context effects** — the presence of other items in the slate influences perceived relevance
-2. **Position bias** — users attend to items differently depending on their display position
-
-### Dataset
-
-**Expedia Hotel Search (ICDM 2013)** — available at [Kaggle](https://www.kaggle.com/c/expedia-personalized-sort/data)
-
-| Property | Value |
-|----------|-------|
-| Sessions used | 80,000 (stratified) |
-| Booking sessions | 15,845 (all retained) |
-| Features per hotel | 23 |
-| Max position slots | 38 |
-| Relevance labels | `click_bool + 4 × booking_bool` (values: 0 / 1 / 5) |
-
-**Key preprocessing decision:** Only `random_bool=1` sessions used for training to avoid confounding display position with hotel quality — ensuring position bias is learnable from genuine random exposure.
-
-### Model Architecture
-```
-Input: [batch, slate_size, 23 features]
-         │
-         ▼
-Feature Encoder
-Linear → LayerNorm → ReLU → 128-dim
-         │
-         ▼
-Transformer Encoder (2 layers, 4 heads)
-Self-attention over full candidate slate
-(captures inter-item context effects)
-         │
-    ┌────┴────┐
-    │         │
-    │  Learned Position Embedding Table
-    │  (38 slots × 128-dim)
-    │  (captures display position bias)
-    │         │
-    └────┬────┘
-         │ Additive Fusion
-         ▼
-Linear Scorer → scalar relevance score per item
-```
-
-**Total parameters:** 413,057
-
-### Training Details
-
-| Hyperparameter | Value |
-|---------------|-------|
-| Optimizer | Adam (lr = 3e-3) |
-| Loss | Weighted pairwise (relevance-gap + position-discount) |
-| Slate sampling | Booked = 3.0×, Clicked = 1.5×, Neutral = 0.5× |
-| Epochs | 20 |
-| Compute | Kaggle Tesla T4 GPU |
-
-### Ablation Results
-
-| Model | NDCG@10 |
-|-------|---------|
-| SelfAttentionOnly (Pobrotyn baseline) | 0.2993 |
-| **PASAR (full model)** | **0.3848** |
-| PositionBiasOnly | 0.3922 |
-
-**Key finding:** PositionBiasOnly outperforms full PASAR, suggesting that inter-item self-attention can interfere with position signal utilization rather than complementing it — a finding that itself warrants further investigation and is a publishable observation.
-
----
-
-## Repository Structure
+## Repository layout
 
 ```
-├── src/
-│   ├── data/          # Data loading and fold splitting
-│   ├── models/        # RankNet, LambdaRank, LambdaMART, PASAR implementations
-│   ├── metrics/       # NDCG@k, MAP evaluation
-│   ├── training/      # Training loops, early stopping, logging
-│   └── utils/         # Reproducibility, device setup, result saving
-│
-├── notebooks/         # Kaggle experiment notebooks
-├── plots/             # Generated figures and visualisations
-├── results/           # Saved metrics and experiment outputs
-├── datasets/          # LETOR 4.0 data (not committed — see below)
-├── papers/
-│   ├── originals/     # PDFs of papers read
-│   └── summaries/     # Paper summaries (Markdown)
-└── report/            # Exported research report (Overleaf sync)
+Ajaz_Hussain_MTP-/
+├── README.md
+├── requirements.txt
+├── report/                          final report (LaTeX source + PDF)
+│   ├── Ajaz_Hussain_MTP_report.pdf
+│   ├── report.tex
+│   ├── make_figs.py                 makes the figures in figs/ from the printed results
+│   └── figs/
+├── 1_lcl_first_order/               earlier work: self-attention on LCL data (thesis)
+│   ├── README.md
+│   └── LCL_thesis_Ajaz_Hussain.pdf
+├── 2_synthetic_higher_order/        main study: self-attention vs DeepHalo (Sections 5-8 of the report)
+│   ├── synth.py                     data generation, all models, training loop, command line
+│   ├── calib_box.py                 calibrates the box-kernel datasets -> box_calib.json
+│   ├── calib_order.py               calibrates the order-4/5 datasets -> order_calib.json
+│   ├── tune_select.py               picks one configuration per family from the tuning grid
+│   ├── summarize.py                 main tables (gap to twin closed, hard part captured)
+│   ├── paired.py                    seed-by-seed paired comparisons (wins out of 30)
+│   ├── size_summary.py              training-size sweep tables
+│   ├── depth_summary.py             depth vs order tables
+│   ├── interp_train.py              retrains the chosen models and saves their weights
+│   ├── interpret.py                 the look inside: LCL fit, attention ablation, attention closeness, IIA test
+│   ├── slurm/                       the SLURM job scripts used on the WSAI cluster
+│   └── notebooks/
+│       └── higher_order_calibration_kaggle.ipynb   first timing + strength calibration (Kaggle)
+└── 3_real_data/                     LPMC and Expedia (Section 8.11)
+    ├── comparison_with_deephalo_lpmc_expedia.ipynb
+    └── pasar_expedia_preprocessing.ipynb
 ```
 
 ---
@@ -149,50 +61,105 @@ Linear Scorer → scalar relevance score per item
 ## Setup
 
 ```bash
-git clone https://github.com/ajazhsn/Ajaz_Hussain_MTP-.git
-cd Ajaz_Hussain_MTP-
+python -m venv venv && source venv/bin/activate      # or a conda environment
 pip install -r requirements.txt
 ```
 
-**LETOR 4.0:** Download MQ2007 from the official source and place in `dataset/LETOR4.0/`.
-
-**Expedia:** Download from [Kaggle](https://www.kaggle.com/c/expedia-personalized-sort/data) and place in `dataset/Expedia/`.
+Everything runs on CPU, but a GPU makes the sweeps much faster. On the WSAI cluster we used the conda environment `pytorch-env` and one V100 per array task. The `source /storage/opt/miniforge3/...` and `conda activate` lines in the job scripts are specific to that cluster, so change them for your own machine.
 
 ---
 
-## Papers Read
+## Synthetic study (`2_synthetic_higher_order/`)
 
-| # | Paper | Summary |
-|---|-------|---------|
-| 1 | Burges (2010) — RankNet to LambdaRank to LambdaMART | [Summary](papers/summaries/ranknet_lambdarank_lambdamart.md) |
-| 2 | Seshadri et al., ICML 2019 — CDM: Context Effects from Raw Choice Data | [Summary](papers/summaries/cdm_context_effects.md) |
-| 3 | Seshadri et al., NeurIPS 2020 — Learning Rich Rankings | [Summary](papers/summaries/learning_rich_rankings.md) |
-| 4 | Pei et al., RecSys 2019 — RewardRank | [Summary](papers/summaries/rewardrank.md) |
-| 5 | Pobrotyn et al., 2020 — Context-Aware LTR with Self-Attention | [Summary](papers/summaries/self_attention_reranker.md) |
-| 6 | Tomlinson & Benson, 2020 — Learning Interpretable Feature Context Effects | [Summary](papers/summaries/lcl_dlcl.md) |
+### The data
+
+No data files are stored. Every dataset is regenerated from `(dataset, seed)`, so the same seed gives exactly the same data on every machine. Each slate has 10 items with 6 standard-normal features. The utility is `u_i = θ·x_i + s·λ·c_i(S)`, and the chosen item is drawn from the softmax.
+
+| Dataset | Context term | Order |
+|---|---|---|
+| `D0_lcl` | LCL: `x_iᵀ A x̄_S`, A of rank 2 | 1 (linear) |
+| `D1_sim` / `D1b_sim` | closeness of i to one other item (similarity, s = −1) | 1 |
+| `D2_comp` / `D2b_comp` | closeness to the midpoint of two others (compromise) | 2 |
+| `D3_centre` / `D3b_centre` | closeness to the centre of three others | 3 |
+| `D4_quad`, `D5_quint` | closeness to the centre of four / five others (depth test only) | 4, 5 |
+
+Closeness uses features 0 and 1 only. The `b` versions use a box kernel (radius 0.25) instead of a Gaussian (σ = 0.2). The strength λ is set so that the part that the slate mean and sd cannot explain (the **hard part**) is about 0.03 nats for every dataset. The values for D0–D3 are fixed in `synth.py`. The box and order-4/5 values are read from `box_calib.json` and `order_calib.json`, which must sit next to `synth.py`. Run the two calibration scripts once to create them.
+
+### Models (names used on the command line)
+
+| Name | Model |
+|---|---|
+| `sa_L3_w32_h2` | tuned self-attention: 3 post-norm encoder layers, width 32, 2 heads, no positional encoding (25,953 params) |
+| `dhq_L4_e16_H8` | tuned DeepHalo, quadratic version: 4 layers, embedding 16, 8 heads (11,713 params) |
+| `sa1_self` | **blindfolded twin**: 1-layer self-attention where each item can only attend to itself, so it has no context |
+| `pool_meansd` | each item + the mean and sd of the slate (the reference for the hard part) |
+| `sa_L{L}_w{W}_h{H}`, `dhq_L{L}_e{E}_H{H}` | any other size, used in the tuning grid |
+| `aosoft_…`, `aolin_…` | attention-only models (no feed-forward network), used in the depth test |
+| `sa1`, `sa2`, `sa1_wide`, `dh4`, … | models of the first sweep and the size controls (Section 8.7) |
+
+### A quick test run
+
+```bash
+cd 2_synthetic_higher_order
+python synth.py --datasets D2_comp --models sa_L3_w32_h2,dhq_L4_e16_H8,pool_meansd,sa1_self \
+                --seeds 0 --out quick_test --patience 10,6
+python summarize.py quick_test
+```
+
+Each run writes one JSON file to `quick_test/results/`. Runs that already exist are skipped, so every command can be resumed after a crash or time-out.
+
+### Reproducing the report, step by step
+
+Submit every job script from inside `2_synthetic_higher_order/`, for example `sbatch slurm/run_final.sbatch`.
+
+| Step | Job script | Then run | Report section |
+|---|---|---|---|
+| 1. First sweep (fixed-size models) | `slurm/run_gpu.sbatch`, `slurm/run_dhq.sbatch` | `python summarize.py synth_out` | 8.5 (first look) |
+| 2. Size controls (depth vs width) | `slurm/run_ctrl.sbatch` | `python paired.py synth_out` | 8.7 |
+| 3. Box kernel: calibrate, then run | `slurm/calib_box.sbatch`, then `python calib_box.py --pick 0.25`, then `slurm/run_box.sbatch` | `python summarize.py synth_out` | 8.6 |
+| 4. Tuning on selection seeds 100–104 | `slurm/run_tune.sbatch` | `python tune_select.py synth_tune` | 7.2 |
+| 5. **Final comparison**, 30 reporting seeds (0–29) | `slurm/run_final.sbatch` | `python summarize.py synth_final`, `python paired.py synth_final` | 8.4–8.6 |
+| 6. Training-size sweep | `slurm/run_size.sbatch` | `python size_summary.py` | 8.9 |
+| 7. Look inside the models (5 seeds) | `slurm/run_interp.sbatch`, then `slurm/run_interp_analysis.sbatch` | read `interp_report.txt` | 8.12 |
+| 8. Same with box data and 10 seeds | `slurm/run_interp2.sbatch`, then `slurm/run_interp2_analysis.sbatch` | read `interp_report_10seeds.txt` | 8.13 |
+| 9. Depth vs order | `slurm/calib_order.sbatch`, then `slurm/run_depth.sbatch` | `python depth_summary.py` | 8.14 |
+
+Tuning (step 4) uses seeds 100–104 only, and every number in the report comes from seeds 0–29, so the configuration is never chosen on the test seeds.
 
 ---
 
-## Progress Log
+## Real data (`3_real_data/`)
 
-| Date | Milestone |
-|------|-----------|
-| 2025-06 | Repository setup, folder structure created |
-| 2025-06 | LETOR 4.0 data loader implementation |
-| 2025-06 | RankNet — implementation, training, analysis |
-| 2025-06 | LambdaRank — implementation, training, analysis |
-| 2025-06 | LambdaMART — implementation, training, analysis |
-| 2025-06 | Phase 1 comparative analysis and plots |
-| 2025-07 | Expedia dataset preprocessing and EDA |
-| 2025-07 | PASAR architecture design and implementation |
-| 2025-07 | PASAR training with weighted slate sampling |
-| 2025-07 | Ablation study: SelfAttentionOnly vs PASAR vs PositionBiasOnly |
-| | Report writing — Overleaf |
+- **LPMC** (London Passenger Mode Choice): 4 travel modes, all always available. Downloaded inside the notebook from `http://transp-or.epfl.ch/data/lpmc.dat`. We split by survey year.
+- **Expedia** (ICDM 2013 hotel search, Kaggle): we keep only searches with `random_bool = 1`, where the hotel order on the page is random, so position cannot fake a context effect. `pasar_expedia_preprocessing.ipynb` holds the earlier PASAR work and the preprocessing; `comparison_with_deephalo_lpmc_expedia.ipynb` trains MNL, MLPs, pools, DeepHalo and self-attention (with its blindfolded twin) on both datasets over 15 seeds.
+
+Both notebooks were written for Kaggle, so change the input paths at the top (`/kaggle/input/...`) to your own.
 
 ---
 
-## Broader Research Direction
+## Earlier work: LCL (`1_lcl_first_order/`)
 
-This project sits at the intersection of **Learning to Rank**, **discrete choice modeling**, and **context-aware recommendation**. The professor's broader vision is towards **Conversational Recommender Systems for E-Commerce** — an interactive system where users refine preferences through dialogue and receive context-aware ranked recommendations.
+This is our earlier study on first-order (LCL) data. It asks whether a self-attention model that predicts well has also learned the true θ and A, using a behavioural probe that reads them out of any trained model. The main results are in Section 4.4 of the report and in the thesis PDF.
 
-The PASAR work is a foundational step: establishing that context effects (both inter-item and positional) matter in e-commerce ranking, and that they can be explicitly modeled rather than ignored.
+---
+
+## Rebuilding the report
+
+```bash
+cd report
+python make_figs.py          # optional: remakes figs/*.pdf
+pdflatex report.tex && pdflatex report.tex
+```
+
+---
+
+## Main references
+
+- Zhang, Wang, Gao and Li (2025). *Deep Halo: Learning context effects of any order.* NeurIPS 2025. arXiv:2601.04616.
+- Tomlinson and Benson (2021). *Learning interpretable feature context effects in discrete choice.* KDD 2021.
+- Seshadri, Peysakhovich and Ugander (2019). *Discovering context effects from raw choice data.* ICML 2019.
+- Vaswani et al. (2017). *Attention is all you need.* NeurIPS 2017.
+
+The full list is in the report.
+
+Contact: Ajaz Hussain, da25m006@smail.iitm.ac.in
