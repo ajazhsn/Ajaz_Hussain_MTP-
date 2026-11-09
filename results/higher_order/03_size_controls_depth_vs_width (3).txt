@@ -1,0 +1,60 @@
+da25m006@WSAI-CLUSTER:~$ cd /storage_server/da25m006/synth
+squeue -u da25m006                       # are any jobs still running?
+ls synth_out/results | wc -l             # finished files (target: 1320)
+source /storage/opt/miniforge3/etc/profile.d/conda.sh && conda activate pytorch-env
+python summarize.py synth_out
+             JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)
+1320
+
+=== D0_lcl   seeds with oracle: 30   oracle CE 1.8797   theta-only CE 1.9424
+model          n  params          excess (nats)     gap to twin closed %         beyond mean+sd %
+mlp           30    4673      0.0547 +-  0.0006        -0.555 +-   0.076                n/a (lcl)
+sa1_self      30    8865      0.0544 +-  0.0006         0.000 +-   0.000                n/a (lcl)
+pool_mean     30    5057      0.0017 +-  0.0000        96.797 +-   0.073                n/a (lcl)
+pool_meansd   30    5441      0.0017 +-  0.0000        96.816 +-   0.056              (reference)
+sa1           30    8865      0.0015 +-  0.0000        97.246 +-   0.062                n/a (lcl)
+sa2           30   17409      0.0016 +-  0.0000        96.975 +-   0.070                n/a (lcl)
+dh1           30   12265      0.0021 +-  0.0001        96.139 +-   0.094                n/a (lcl)
+dh2           30   22097      0.0021 +-  0.0000        96.113 +-   0.080                n/a (lcl)
+dh3           30   31929      0.0022 +-  0.0001        96.036 +-   0.117                n/a (lcl)
+dh4           30   41761      0.0021 +-  0.0001        96.077 +-   0.098                n/a (lcl)
+
+=== D1_sim   seeds with oracle: 30   oracle CE 1.8863   theta-only CE 1.9187
+model          n  params          excess (nats)     gap to twin closed %         beyond mean+sd %
+mlp           30    4673      0.0313 +-  0.0002        -0.783 +-   0.164        -1.488 +-   0.135
+sa1_self      30    8865      0.0311 +-  0.0002         0.000 +-   0.000        -0.703 +-   0.142
+pool_mean     30    5057      0.0310 +-  0.0002         0.140 +-   0.139        -0.560 +-   0.157
+pool_meansd   30    5441      0.0309 +-  0.0002         0.692 +-   0.140              (reference)
+sa1           30    8865      0.0252 +-  0.0008        18.798 +-   2.489        18.182 +-   2.550
+sa2           30   17409      0.0177 +-  0.0013        43.224 +-   4.219        42.846 +-   4.237
+dh1           30   12265      0.0313 +-  0.0002        -0.862 +-   0.180        -1.568 +-   0.174
+dh2           30   22097      0.0312 +-  0.0002        -0.515 +-   0.157        -1.219 +-   0.155
+dh3           30   31929      0.0313 +-  0.0002        -0.819 +-   0.229        -1.525 +-   0.233
+dh4           30   41761      0.0312 +-  0.0002        -0.343 +-   0.172        -1.046 +-   0.165
+
+=== D2_comp   seeds with oracle: 30   oracle CE 1.9015   theta-only CE 1.9652
+model          n  params          excess (nats)     gap to twin closed %         beyond mean+sd %
+mlp           30    4673      0.0436 +-  0.0001        -0.669 +-   0.093       -46.431 +-   0.487
+sa1_self      30    8865      0.0433 +-  0.0001         0.000 +-   0.000       -45.459 +-   0.462
+pool_mean     30    5057      0.0338 +-  0.0001        21.919 +-   0.103       -13.575 +-   0.378
+pool_meansd   30    5441      0.0298 +-  0.0001        31.232 +-   0.219              (reference)
+sa1           30    8865      0.0270 +-  0.0003        37.705 +-   0.619         9.416 +-   0.839
+sa2           30   17409      0.0241 +-  0.0001        44.456 +-   0.293        19.219 +-   0.420
+dh1           30   12265      0.0319 +-  0.0001        26.287 +-   0.175        -7.215 +-   0.364
+dh2           30   22097      0.0292 +-  0.0002        32.640 +-   0.407         2.008 +-   0.724
+dh3           30   31929      0.0286 +-  0.0001        34.069 +-   0.258         4.101 +-   0.454
+dh4           30   41761      0.0283 +-  0.0001        34.750 +-   0.261         5.094 +-   0.434
+
+=== D3_centre   seeds with oracle: 30   oracle CE 1.8643   theta-only CE 2.0013
+model          n  params          excess (nats)     gap to twin closed %         beyond mean+sd %
+mlp           30    4673      0.0769 +-  0.0001        -0.220 +-   0.042      -230.409 +-   2.066
+sa1_self      30    8865      0.0768 +-  0.0001         0.000 +-   0.000      -229.691 +-   2.089
+pool_mean     30    5057      0.0357 +-  0.0001        53.472 +-   0.067       -53.388 +-   0.936
+pool_meansd   30    5441      0.0233 +-  0.0002        69.632 +-   0.199              (reference)
+sa1           30    8865      0.0200 +-  0.0001        73.912 +-   0.129        14.001 +-   0.644
+sa2           30   17409      0.0157 +-  0.0001        79.519 +-   0.168        32.481 +-   0.678
+dh1           30   12265      0.0383 +-  0.0002        50.061 +-   0.248       -64.657 +-   1.379
+dh2           30   22097      0.0257 +-  0.0001        66.553 +-   0.125       -10.274 +-   0.816
+dh3           30   31929      0.0243 +-  0.0001        68.304 +-   0.142        -4.474 +-   0.703
+dh4           30   41761      0.0236 +-  0.0001        69.218 +-   0.096        -1.475 +-   0.659
+(pytorch-env) da25m006@WSAI-CLUSTER:/storage_server/da25m006/synth$

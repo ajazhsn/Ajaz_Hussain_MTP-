@@ -1,0 +1,80 @@
+da25m006@WSAI-CLUSTER:/storage_server/da25m006/synth$ cd /storage_server/da25m006/synth
+source /storage/opt/miniforge3/etc/profile.d/conda.sh && conda activate pytorch-env
+ls synth_out/results | grep -c "b_"            # should be 810
+python paired.py synth_out | sed -n '/D1b_sim/,$p'
+python summarize.py synth_out | sed -n '/D1b_sim/,$p'
+810
+=== D1b_sim
+comparison                                        A            B   n   mean diff A-B     s.e.       t   A wins
+1-layer attention vs mean+sd                    sa1  pool_meansd  30        -0.00125  0.00040    -3.1   29/30
+2-layer attention vs mean+sd                    sa2  pool_meansd  30        -0.00028  0.00007    -3.9   25/30
+DeepHalo (paper) vs mean+sd                     dh4  pool_meansd  30         0.00042  0.00006     7.6    1/30
+1-layer attention vs DeepHalo (paper)           sa1          dh4  30        -0.00167  0.00040    -4.2   30/30
+2-layer attention vs DeepHalo (paper)           sa2          dh4  30        -0.00070  0.00005   -14.7   30/30
+2 layers vs 1 layer                             sa2          sa1  30         0.00097  0.00039     2.5    5/30
+DeepHalo quadratic vs linear (paper size)       dhq4          dh4  30         0.00002  0.00004     0.6   13/30
+DeepHalo quadratic vs mean+sd                  dhq4  pool_meansd  30         0.00045  0.00004    10.4    1/30
+1-layer attention vs DeepHalo quadratic         sa1         dhq4  30        -0.00169  0.00039    -4.3   30/30
+2-layer attention vs DeepHalo quadratic         sa2         dhq4  30        -0.00073  0.00006   -11.6   30/30
+attention vs DeepHalo-Q at equal size (~9k)        sa1        dhq_s  30        -0.00156  0.00040    -3.9   30/30
+
+=== D2b_comp
+comparison                                        A            B   n   mean diff A-B     s.e.       t   A wins
+1-layer attention vs mean+sd                    sa1  pool_meansd  30        -0.00207  0.00024    -8.6   27/30
+2-layer attention vs mean+sd                    sa2  pool_meansd  30        -0.00486  0.00019   -25.3   30/30
+DeepHalo (paper) vs mean+sd                     dh4  pool_meansd  30        -0.00125  0.00015    -8.2   29/30
+1-layer attention vs DeepHalo (paper)           sa1          dh4  30        -0.00082  0.00024    -3.4   21/30
+2-layer attention vs DeepHalo (paper)           sa2          dh4  30        -0.00361  0.00015   -24.4   30/30
+2 layers vs 1 layer                             sa2          sa1  30        -0.00279  0.00027   -10.3   30/30
+DeepHalo quadratic vs linear (paper size)       dhq4          dh4  30        -0.00086  0.00008   -10.6   30/30
+DeepHalo quadratic vs mean+sd                  dhq4  pool_meansd  30        -0.00212  0.00013   -16.2   30/30
+1-layer attention vs DeepHalo quadratic         sa1         dhq4  30         0.00005  0.00025     0.2   15/30
+2-layer attention vs DeepHalo quadratic         sa2         dhq4  30        -0.00274  0.00017   -16.6   30/30
+attention vs DeepHalo-Q at equal size (~9k)        sa1        dhq_s  30         0.00038  0.00026     1.4   13/30
+
+=== D3b_centre
+comparison                                        A            B   n   mean diff A-B     s.e.       t   A wins
+1-layer attention vs mean+sd                    sa1  pool_meansd  30        -0.00297  0.00017   -17.9   30/30
+2-layer attention vs mean+sd                    sa2  pool_meansd  30        -0.00677  0.00019   -36.1   30/30
+DeepHalo (paper) vs mean+sd                     dh4  pool_meansd  30         0.00102  0.00018     5.8    5/30
+1-layer attention vs DeepHalo (paper)           sa1          dh4  30        -0.00400  0.00012   -34.1   30/30
+2-layer attention vs DeepHalo (paper)           sa2          dh4  30        -0.00779  0.00013   -61.9   30/30
+2 layers vs 1 layer                             sa2          sa1  30        -0.00379  0.00014   -27.5   30/30
+DeepHalo quadratic vs linear (paper size)       dhq4          dh4  30        -0.00184  0.00011   -16.9   30/30
+DeepHalo quadratic vs mean+sd                  dhq4  pool_meansd  30        -0.00081  0.00019    -4.4   20/30
+1-layer attention vs DeepHalo quadratic         sa1         dhq4  30        -0.00216  0.00013   -16.3   30/30
+2-layer attention vs DeepHalo quadratic         sa2         dhq4  30        -0.00595  0.00014   -42.8   30/30
+attention vs DeepHalo-Q at equal size (~9k)        sa1        dhq_s  30        -0.00232  0.00018   -13.1   30/30
+=== D1b_sim   seeds with oracle: 30   oracle CE 1.8890   theta-only CE 1.9220
+model          n  params          excess (nats)     gap to twin closed %         beyond mean+sd %
+sa1_self      30    8865      0.0321 +-  0.0002         0.000 +-   0.000        -0.206 +-   0.103
+pool_mean     30    5057      0.0322 +-  0.0002        -0.430 +-   0.095        -0.635 +-   0.091
+pool_meansd   30    5441      0.0320 +-  0.0002         0.203 +-   0.103              (reference)
+sa1           30    8865      0.0308 +-  0.0004         4.036 +-   1.198         3.842 +-   1.200
+sa2           30   17409      0.0317 +-  0.0002         1.073 +-   0.170         0.867 +-   0.228
+dh4           30   41761      0.0324 +-  0.0002        -1.114 +-   0.112        -1.324 +-   0.177
+dhq_s         30    9401      0.0323 +-  0.0002        -0.758 +-   0.144        -0.965 +-   0.151
+dhq4          30   43873      0.0325 +-  0.0002        -1.193 +-   0.120        -1.401 +-   0.135
+
+=== D2b_comp   seeds with oracle: 30   oracle CE 1.8998   theta-only CE 1.9600
+model          n  params          excess (nats)     gap to twin closed %         beyond mean+sd %
+sa1_self      30    8865      0.0429 +-  0.0001         0.000 +-   0.000       -36.525 +-   0.526
+pool_mean     30    5057      0.0346 +-  0.0001        19.228 +-   0.119       -10.276 +-   0.479
+pool_meansd   30    5441      0.0314 +-  0.0001        26.721 +-   0.289              (reference)
+sa1           30    8865      0.0294 +-  0.0003        31.548 +-   0.572         6.571 +-   0.766
+sa2           30   17409      0.0266 +-  0.0002        38.048 +-   0.354        15.423 +-   0.567
+dh4           30   41761      0.0302 +-  0.0001        29.643 +-   0.189         3.944 +-   0.464
+dhq_s         30    9401      0.0290 +-  0.0001        32.418 +-   0.223         7.738 +-   0.437
+dhq4          30   43873      0.0293 +-  0.0001        31.658 +-   0.175         6.702 +-   0.391
+
+=== D3b_centre   seeds with oracle: 30   oracle CE 1.8642   theta-only CE 1.9909
+model          n  params          excess (nats)     gap to twin closed %         beyond mean+sd %
+sa1_self      30    8865      0.0735 +-  0.0001         0.000 +-   0.000      -192.260 +-   1.735
+pool_mean     30    5057      0.0366 +-  0.0001        50.208 +-   0.066       -45.515 +-   0.847
+pool_meansd   30    5441      0.0252 +-  0.0002        65.748 +-   0.209              (reference)
+sa1           30    8865      0.0222 +-  0.0001        69.789 +-   0.113        11.713 +-   0.582
+sa2           30   17409      0.0184 +-  0.0001        74.948 +-   0.146        26.785 +-   0.605
+dh4           30   41761      0.0262 +-  0.0001        64.356 +-   0.136        -4.170 +-   0.714
+dhq_s         30    9401      0.0245 +-  0.0002        66.633 +-   0.209         2.447 +-   0.962
+dhq4          30   43873      0.0244 +-  0.0001        66.852 +-   0.145         3.123 +-   0.707
+(pytorch-env) da25m006@WSAI-CLUSTER:/storage_server/da25m006/synth$

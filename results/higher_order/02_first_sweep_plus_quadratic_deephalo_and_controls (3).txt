@@ -1,0 +1,56 @@
+da25m006@WSAI-CLUSTER:~$ cd /storage_server/da25m006/synth
+source /storage/opt/miniforge3/etc/profile.d/conda.sh && conda activate pytorch-env
+grep -c sa1_wide synth.py            # should print 2 (new version)
+python paired.py synth_out
+1
+
+=== D0_lcl
+comparison                                        A            B   n   mean diff A-B     s.e.       t   A wins
+1-layer attention vs mean+sd                    sa1  pool_meansd  30        -0.00023  0.00003    -8.3   28/30
+2-layer attention vs mean+sd                    sa2  pool_meansd  30        -0.00009  0.00004    -2.1   20/30
+DeepHalo (paper) vs mean+sd                     dh4  pool_meansd  30         0.00040  0.00006     6.8    2/30
+1-layer attention vs DeepHalo (paper)           sa1          dh4  30        -0.00063  0.00005   -12.9   30/30
+2-layer attention vs DeepHalo (paper)           sa2          dh4  30        -0.00049  0.00006    -8.5   29/30
+2 layers vs 1 layer                             sa2          sa1  30         0.00015  0.00004     3.5    7/30
+DeepHalo 4 layers vs 1 layer                    dh4          dh1  30         0.00003  0.00005     0.6   11/30
+
+=== D1_sim
+comparison                                        A            B   n   mean diff A-B     s.e.       t   A wins
+1-layer attention vs mean+sd                    sa1  pool_meansd  30        -0.00567  0.00082    -6.9   29/30
+2-layer attention vs mean+sd                    sa2  pool_meansd  30        -0.01316  0.00130   -10.1   30/30
+DeepHalo (paper) vs mean+sd                     dh4  pool_meansd  30         0.00032  0.00005     6.4    2/30
+1-layer attention vs DeepHalo (paper)           sa1          dh4  30        -0.00599  0.00081    -7.4   30/30
+2-layer attention vs DeepHalo (paper)           sa2          dh4  30        -0.01348  0.00130   -10.4   30/30
+2 layers vs 1 layer                             sa2          sa1  30        -0.00750  0.00172    -4.3   25/30
+DeepHalo 4 layers vs 1 layer                    dh4          dh1  30        -0.00016  0.00005    -3.1   20/30
+
+=== D2_comp
+comparison                                        A            B   n   mean diff A-B     s.e.       t   A wins
+1-layer attention vs mean+sd                    sa1  pool_meansd  30        -0.00280  0.00025   -11.2   29/30
+2-layer attention vs mean+sd                    sa2  pool_meansd  30        -0.00573  0.00013   -42.5   30/30
+DeepHalo (paper) vs mean+sd                     dh4  pool_meansd  30        -0.00152  0.00013   -11.4   29/30
+1-layer attention vs DeepHalo (paper)           sa1          dh4  30        -0.00128  0.00030    -4.3   22/30
+2-layer attention vs DeepHalo (paper)           sa2          dh4  30        -0.00421  0.00015   -28.2   30/30
+2 layers vs 1 layer                             sa2          sa1  30        -0.00293  0.00028   -10.6   30/30
+DeepHalo 4 layers vs 1 layer                    dh4          dh1  30        -0.00367  0.00012   -31.3   30/30
+
+=== D3_centre
+comparison                                        A            B   n   mean diff A-B     s.e.       t   A wins
+1-layer attention vs mean+sd                    sa1  pool_meansd  30        -0.00329  0.00017   -19.2   30/30
+2-layer attention vs mean+sd                    sa2  pool_meansd  30        -0.00759  0.00019   -39.1   30/30
+DeepHalo (paper) vs mean+sd                     dh4  pool_meansd  30         0.00032  0.00015     2.1    9/30
+1-layer attention vs DeepHalo (paper)           sa1          dh4  30        -0.00360  0.00012   -30.0   30/30
+2-layer attention vs DeepHalo (paper)           sa2          dh4  30        -0.00791  0.00013   -58.8   30/30
+2 layers vs 1 layer                             sa2          sa1  30        -0.00430  0.00016   -26.1   30/30
+DeepHalo 4 layers vs 1 layer                    dh4          dh1  30        -0.01471  0.00021   -69.0   30/30
+(pytorch-env) da25m006@WSAI-CLUSTER:/storage_server/da25m006/synth$ sbatch run_ctrl.sbatch
+squeue -u da25m006
+Submitted batch job 6816
+             JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)
+        6816_[0-3]    public synthctr da25m006 PD       0:00      1 (None)
+(pytorch-env) da25m006@WSAI-CLUSTER:/storage_server/da25m006/synth$ squeue -u da25m006
+             JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)
+        6816_[2-3]    public synthctr da25m006 PD       0:00      1 (QOSMaxGRESPerUser)
+            6816_1    public synthctr da25m006  R       0:12      1 WSAI-04
+            6816_0    public synthctr da25m006  R       0:13      1 WSAI-04
+(pytorch-env) da25m006@WSAI-CLUSTER:/storage_server/da25m006/synth$

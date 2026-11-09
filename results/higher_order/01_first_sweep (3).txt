@@ -1,0 +1,58 @@
+da25m006@WSAI-CLUSTER:~$ cd /storage_server/da25m006/synth
+da25m006@WSAI-CLUSTER:/storage_server/da25m006/synth$ squeue -u da25m006
+             JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)
+da25m006@WSAI-CLUSTER:/storage_server/da25m006/synth$ for d in synth_size/n*/; do echo $d $(find $d -name '*.json' | wc -l); done
+synth_size/n100000/ 750
+synth_size/n1000000/ 250
+synth_size/n11000/ 750
+synth_size/n30000/ 750
+da25m006@WSAI-CLUSTER:/storage_server/da25m006/synth$ echo 'cd /storage_server/da25m006/synth' >> ~/.bashrc
+da25m006@WSAI-CLUSTER:/storage_server/da25m006/synth$ python size_summary.py
+Traceback (most recent call last):
+  File "/storage_server/da25m006/synth/size_summary.py", line 11, in <module>
+    import numpy as np, pandas as pd
+ModuleNotFoundError: No module named 'pandas'
+da25m006@WSAI-CLUSTER:/storage_server/da25m006/synth$ source /storage/opt/miniforge3/etc/profile.d/conda.sh
+conda activate pytorch-env
+python size_summary.py
+
+=== D0_lcl: % of context captured (gap to twin closed); [wins vs mean+sd]
+  n_train             sa_L3_w32_h2            dhq_L4_e16_H8              pool_meansd
+    11000         70.0± 0.6 [0/30]         56.6± 1.9 [0/30]                82.8± 0.3
+    30000         84.5± 0.4 [0/30]         79.4± 0.6 [0/30]                89.2± 0.2
+   100000         93.0± 0.2 [2/30]         92.4± 0.2 [2/30]                94.3± 0.1
+   285000        96.6± 0.1 [12/30]        96.8± 0.1 [13/30]                96.8± 0.1
+  1000000         98.5± 0.1 [6/10]         98.7± 0.1 [8/10]                98.2± 0.2
+
+=== D2_comp: % of hard part captured (beyond mean+sd); [wins vs mean+sd]
+  n_train             sa_L3_w32_h2            dhq_L4_e16_H8              pool_meansd
+    11000         -8.1± 0.7 [0/30]        -15.5± 0.8 [0/30]                 0.0± 0.0
+    30000         -2.5± 0.7 [8/30]        -12.8± 1.1 [1/30]                 0.0± 0.0
+   100000         6.0± 0.6 [30/30]         2.2± 0.7 [23/30]                 0.0± 0.0
+   285000        21.6± 0.7 [30/30]         9.8± 0.4 [30/30]                 0.0± 0.0
+  1000000        53.1± 0.9 [10/10]        21.8± 1.2 [10/10]                 0.0± 0.0
+
+=== D3_centre: % of hard part captured (beyond mean+sd); [wins vs mean+sd]
+  n_train             sa_L3_w32_h2            dhq_L4_e16_H8              pool_meansd
+    11000        -14.1± 2.2 [4/30]        -48.1± 2.7 [0/30]                 0.0± 0.0
+    30000        -1.8± 1.4 [15/30]        -24.2± 1.8 [0/30]                 0.0± 0.0
+   100000        20.8± 0.8 [30/30]         -4.3± 0.9 [6/30]                 0.0± 0.0
+   285000        32.3± 0.6 [30/30]         7.3± 0.7 [29/30]                 0.0± 0.0
+  1000000        45.4± 0.5 [10/10]        20.4± 0.9 [10/10]                 0.0± 0.0
+
+=== D2b_comp: % of hard part captured (beyond mean+sd); [wins vs mean+sd]
+  n_train             sa_L3_w32_h2            dhq_L4_e16_H8              pool_meansd
+    11000         -8.9± 0.6 [0/30]        -15.3± 0.7 [0/30]                 0.0± 0.0
+    30000         -2.9± 0.5 [4/30]        -12.4± 0.9 [0/30]                 0.0± 0.0
+   100000         4.1± 0.4 [30/30]         2.0± 0.5 [21/30]                 0.0± 0.0
+   285000        16.8± 0.5 [30/30]         8.1± 0.3 [30/30]                 0.0± 0.0
+  1000000        41.2± 0.8 [10/10]        15.8± 1.1 [10/10]                 0.0± 0.0
+
+=== D3b_centre: % of hard part captured (beyond mean+sd); [wins vs mean+sd]
+  n_train             sa_L3_w32_h2            dhq_L4_e16_H8              pool_meansd
+    11000        -15.8± 1.6 [1/30]        -45.6± 2.6 [0/30]                 0.0± 0.0
+    30000        -1.2± 1.3 [12/30]        -24.5± 2.2 [0/30]                 0.0± 0.0
+   100000        16.6± 0.7 [30/30]         -4.6± 1.2 [8/30]                 0.0± 0.0
+   285000        26.4± 0.5 [30/30]         5.7± 0.6 [29/30]                 0.0± 0.0
+  1000000        38.2± 0.5 [10/10]        18.3± 0.8 [10/10]                 0.0± 0.0
+(pytorch-env) da25m006@WSAI-CLUSTER:/storage_server/da25m006/synth$
